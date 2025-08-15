@@ -1,0 +1,22 @@
+.dashboard {
+  padding: 40px 20px;
+  background-color: #fdf8f2;
+  min-height: 100vh; /* Ocupa toda la pantalla */
+  width: 100vw;      /* Ancho completo */
+  font-family: 'Arial', sans-serif;
+  box-sizing: border-box;
+}
+
+.dashboard h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.forms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+}
