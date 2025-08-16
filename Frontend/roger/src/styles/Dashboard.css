@@ -20,3 +20,35 @@
   gap: 30px;
   justify-content: center;
 }
+
+/* Botón de Logout */
+.logout-btn {
+  position: absolute;       /* Lo coloca sobre el layout */
+  top: 20px;                /* Separado del borde superior */
+  right: 20px;              /* Separado del borde derecho */
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ff4d4f; /* Rojo intenso */
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.logout-btn svg {
+  fill: #fff; /* Asegura que el icono sea blanco */
+}
+
+.logout-btn:hover {
+  background-color: #ff7875; /* Rojo más claro al pasar el mouse */
+  transform: translateY(-1px);
+}
+
+.logout-btn:active {
+  transform: translateY(0);
+}

@@ -6,6 +6,8 @@ import cors from "cors";
 // Rutas
 import productsRoutes from "./src/routes/product.js";
 import batchesRoutes from "./src/routes/batches.js";
+import loginRoutes from "./src/routes/login.js";
+import logoutRoutes from "./src/routes/logout.js";
 
 const app = express();
 
@@ -21,5 +23,8 @@ app.use(express.json());
 // Endpoints
 app.use("/api/products", productsRoutes);   // Productos
 app.use("/api/batches", batchesRoutes);
+app.use("/api/login", loginRoutes);
+app.use("/api/logout", logoutRoutes);
+
 
 export default app;
