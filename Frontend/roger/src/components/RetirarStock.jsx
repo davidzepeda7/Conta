@@ -5,7 +5,7 @@ import "../styles/RetirarStock.css";
 const RetirarStock = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState("");
-  const [quantity, setQuantity] = useState(0);
+  const [quantity, setQuantity] = useState("");
 
   useEffect(() => {
     fetchProducts();
@@ -22,9 +22,18 @@ const RetirarStock = () => {
     }
   };
 
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    // Solo enteros positivos
+    if (/^\d*$/.test(value)) {
+      setQuantity(value);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedProduct) return alert("Seleccione un producto");
+    if (!quantity || Number(quantity) <= 0) return alert("Ingrese cantidad válida");
 
     try {
       const res = await fetch("http://localhost:4000/api/batches/exit", {
@@ -37,7 +46,7 @@ const RetirarStock = () => {
       if (!res.ok) return alert("Error: " + (data.error || "No se pudo retirar stock"));
 
       alert("Stock retirado correctamente");
-      setQuantity(0);
+      setQuantity("");
       setSelectedProduct("");
     } catch (err) {
       alert("Error al conectar con el servidor");
@@ -47,6 +56,8 @@ const RetirarStock = () => {
   return (
     <form className="retirar-stock" onSubmit={handleSubmit}>
       <h3>Retirar Stock</h3>
+      
+      <label>Producto</label>
       <select
         value={selectedProduct}
         onChange={(e) => setSelectedProduct(e.target.value)}
@@ -59,13 +70,16 @@ const RetirarStock = () => {
           </option>
         ))}
       </select>
+
+      <label>Cantidad a retirar</label>
       <input
-        type="number"
-        placeholder="Cantidad"
+        type="text"
+        placeholder="Ingrese cantidad"
         value={quantity}
-        onChange={(e) => setQuantity(e.target.value)}
+        onChange={handleQuantityChange}
         required
       />
+
       <button type="submit">Retirar</button>
     </form>
   );

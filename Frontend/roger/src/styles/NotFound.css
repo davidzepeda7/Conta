@@ -12,7 +12,7 @@
   padding: 20px;            /* Un poco de espacio interno */
 }
 
-.error-container h1, p {
+.error-container h1 {
   font-size: 3rem;
   color: #ff4d4f;
   margin-bottom: 20px;
@@ -41,4 +41,9 @@
 
 .error-container button:active {
   transform: translateY(0);
+}
+
+.error-acceso {
+  color: #ff4d4f;
+  font-weight: bold;
 }

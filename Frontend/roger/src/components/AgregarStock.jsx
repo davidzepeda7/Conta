@@ -7,8 +7,8 @@ const AgregarStock = () => {
   const [selectedProduct, setSelectedProduct] = useState("");
   const [batches, setBatches] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState("");
-  const [quantity, setQuantity] = useState(0);
-  const [price, setPrice] = useState(0); // nuevo precio por lote
+  const [quantity, setQuantity] = useState("");
+  const [price, setPrice] = useState("");
 
   useEffect(() => {
     fetchProducts();
@@ -21,29 +21,59 @@ const AgregarStock = () => {
     setProducts(data);
   };
 
-  const handleProductChange = async (e) => {
-    setSelectedProduct(e.target.value);
+  const fetchBatches = async (productId) => {
+    if (!productId) return setBatches([]);
+    const res = await fetch(`http://localhost:4000/api/batches/${productId}`);
+    if (!res.ok) return alert("Error al cargar lotes");
+    const data = await res.json();
+    setBatches(data);
+  };
+
+  const handleProductChange = (e) => {
+    const productId = e.target.value;
+    setSelectedProduct(productId);
     setSelectedBatch("");
-    if (!e.target.value) return setBatches([]);
-    
-    const resBatches = await fetch(`http://localhost:4000/api/batches/${e.target.value}`);
-    if (!resBatches.ok) return alert("Error al cargar lotes");
-    const batchData = await resBatches.json();
-    setBatches(batchData);
+    setPrice("");
+    setQuantity("");
+    fetchBatches(productId);
+  };
+
+  const handleBatchChange = (e) => {
+    const batchId = e.target.value;
+    setSelectedBatch(batchId);
+    const batch = batches.find(b => b._id === batchId);
+    setPrice(batch ? batch.price : "");
+    setQuantity(""); // reset
+  };
+
+  const handlePriceChange = (e) => {
+    const value = e.target.value;
+    // Permite solo números y decimales
+    if (/^\d*\.?\d*$/.test(value)) {
+      setPrice(value);
+    }
+  };
+
+  const handleQuantityChange = (e) => {
+    const value = e.target.value;
+    // Solo enteros positivos
+    if (/^\d*$/.test(value)) {
+      setQuantity(value);
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!selectedProduct) return alert("Seleccione un producto");
-
-    // Si el usuario selecciona un lote existente
-    let batchToUse = batches.find(b => b._id === selectedBatch);
+    if (!quantity || Number(quantity) <= 0) return alert("Ingrese cantidad válida");
+    if (!price || Number(price) <= 0) return alert("Ingrese precio válido");
 
     const body = {
       productId: selectedProduct,
       quantity: Number(quantity),
-      price: batchToUse ? batchToUse.price : Number(price),
-      code: batchToUse ? batchToUse.code : `L-${Date.now()}`
+      price: Number(price),
+      batchId: selectedBatch || undefined,
+      code: selectedBatch ? undefined : `L-${Date.now()}`,
     };
 
     const res = await fetch("http://localhost:4000/api/batches/entry", {
@@ -54,11 +84,13 @@ const AgregarStock = () => {
 
     if (!res.ok) return alert("Error al agregar stock");
     await res.json();
-    alert("Stock agregado correctamente");
+    alert(selectedBatch ? "Lote actualizado correctamente" : "Stock agregado correctamente");
 
-    setQuantity(0);
+    // Reset
+    setQuantity("");
+    setPrice("");
     setSelectedBatch("");
-    setPrice(0);
+    fetchBatches(selectedProduct);
   };
 
   return (
@@ -76,7 +108,7 @@ const AgregarStock = () => {
       {batches.length > 0 && (
         <>
           <label>Lote existente</label>
-          <select value={selectedBatch} onChange={e => setSelectedBatch(e.target.value)}>
+          <select value={selectedBatch} onChange={handleBatchChange}>
             <option value="">Nuevo lote / Precio distinto</option>
             {batches.map(b => (
               <option key={b._id} value={b._id}>
@@ -87,29 +119,25 @@ const AgregarStock = () => {
         </>
       )}
 
-      {/* Precio solo si se crea un nuevo lote */}
-      {!selectedBatch && (
-        <>
-          <label>Precio del nuevo lote</label>
-          <input
-            type="number"
-            placeholder="Precio del nuevo lote"
-            value={price}
-            onChange={e => setPrice(e.target.value)}
-            required
-          />
-        </>
-      )}
-
-      <label>Cantidad</label>
+      <label>Precio</label>
       <input
-        type="number"
-        placeholder="Cantidad"
-        value={quantity}
-        onChange={e => setQuantity(e.target.value)}
+        type="text"
+        placeholder="Precio"
+        value={price}
+        onChange={handlePriceChange}
         required
       />
-      <button type="submit">Agregar</button>
+
+      <label>{selectedBatch ? "Cantidad a agregar" : "Cantidad"}</label>
+      <input
+        type="text"
+        placeholder={selectedBatch ? "Cantidad a agregar" : "Cantidad"}
+        value={quantity}
+        onChange={handleQuantityChange}
+        required
+      />
+
+      <button type="submit">{selectedBatch ? "Actualizar Lote" : "Agregar"}</button>
     </form>
   );
 };

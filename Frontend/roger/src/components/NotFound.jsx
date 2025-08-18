@@ -8,7 +8,7 @@ const Error404 = () => {
   return (
     <div className="error-container">
       <h1>404 - No autorizado</h1>
-      <p>No tienes acceso a esta página.</p>
+      <p className="error-acceso">No tienes acceso a esta página.</p>
       <button onClick={() => navigate("/login")}>Ir al login</button>
     </div>
   );

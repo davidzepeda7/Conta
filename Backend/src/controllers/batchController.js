@@ -2,18 +2,47 @@ import Product from "../models/Product.js";
 import Batch from "../models/Batch.js";
 import Movement from "../models/Movement.js";
 
-// Agregar stock
+// Agregar stock (o actualizar lote existente)
 export const addStock = async (req, res) => {
   try {
-    const { productId, quantity, price, code } = req.body;
+    const { productId, quantity, price, code, batchId } = req.body;
+
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ error: "Producto no encontrado" });
 
-    const batch = await Batch.create({ product: productId, quantity, remaining: quantity, price, code });
-    product.totalStock += quantity;
+    let batch;
+
+    if (batchId) {
+      // 🔹 Actualizar lote existente
+      batch = await Batch.findById(batchId);
+      if (!batch) return res.status(404).json({ error: "Lote no encontrado" });
+
+      batch.remaining += Number(quantity);
+      batch.price = Number(price.toFixed(2)); // aseguramos decimales
+      await batch.save();
+    } else {
+      // 🔹 Crear nuevo lote
+      batch = await Batch.create({
+        product: productId,
+        quantity: Number(quantity),
+        remaining: Number(quantity),
+        price: Number(price.toFixed(2)),
+        code,
+      });
+    }
+
+    // 🔹 Actualizar stock total del producto
+    product.totalStock += Number(quantity);
     await product.save();
 
-    await Movement.create({ product: productId, type: "entrada", quantity, price, code });
+    // 🔹 Registrar movimiento
+    await Movement.create({
+      product: productId,
+      type: "entrada",
+      quantity: Number(quantity),
+      price: Number(price.toFixed(2)),
+      code: batch.code,
+    });
 
     res.json({ product, batch });
   } catch (err) {
@@ -29,7 +58,7 @@ export const removeStock = async (req, res) => {
     if (!product) return res.status(404).json({ error: "Producto no encontrado" });
     if (product.totalStock < quantity) return res.status(400).json({ error: "Stock insuficiente" });
 
-    let qtyToRemove = quantity;
+    let qtyToRemove = Number(quantity);
     const batches = await Batch.find({ product: productId, remaining: { $gt: 0 } }).sort({ date: 1 });
     const removed = [];
 
@@ -40,12 +69,25 @@ export const removeStock = async (req, res) => {
       batch.remaining -= deduct;
       await batch.save();
 
-      await Movement.create({ product: productId, type: "salida", quantity: deduct, price: batch.price, code: batch.code });
-      removed.push({ batchId: batch._id, quantity: deduct, price: batch.price, code: batch.code });
+      await Movement.create({
+        product: productId,
+        type: "salida",
+        quantity: deduct,
+        price: batch.price,
+        code: batch.code,
+      });
+
+      removed.push({
+        batchId: batch._id,
+        quantity: deduct,
+        price: batch.price,
+        code: batch.code,
+      });
+
       qtyToRemove -= deduct;
     }
 
-    product.totalStock -= quantity;
+    product.totalStock -= Number(quantity);
     await product.save();
 
     res.json({ product, removed });
@@ -54,12 +96,13 @@ export const removeStock = async (req, res) => {
   }
 };
 
-// Listar lotes
+// Listar todos los lotes
 export const getAllBatches = async (req, res) => {
   const batches = await Batch.find().populate("product");
   res.json(batches);
 };
 
+// Lotes de un producto
 export const getProductBatches = async (req, res) => {
   const { productId } = req.params;
   const batches = await Batch.find({ product: productId });
