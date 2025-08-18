@@ -46,8 +46,14 @@ const RetirarStock = () => {
       if (!res.ok) return alert("Error: " + (data.error || "No se pudo retirar stock"));
 
       alert("Stock retirado correctamente");
+
+      // Reset
       setQuantity("");
       setSelectedProduct("");
+
+      // 🔹 Recargar página para actualizar ProductList
+      window.location.reload();
+
     } catch (err) {
       alert("Error al conectar con el servidor");
     }

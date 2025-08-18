@@ -43,12 +43,11 @@ const AgregarStock = () => {
     setSelectedBatch(batchId);
     const batch = batches.find(b => b._id === batchId);
     setPrice(batch ? batch.price : "");
-    setQuantity(""); // reset
+    setQuantity("");
   };
 
   const handlePriceChange = (e) => {
     const value = e.target.value;
-    // Permite solo números y decimales
     if (/^\d*\.?\d*$/.test(value)) {
       setPrice(value);
     }
@@ -56,7 +55,6 @@ const AgregarStock = () => {
 
   const handleQuantityChange = (e) => {
     const value = e.target.value;
-    // Solo enteros positivos
     if (/^\d*$/.test(value)) {
       setQuantity(value);
     }
@@ -90,7 +88,9 @@ const AgregarStock = () => {
     setQuantity("");
     setPrice("");
     setSelectedBatch("");
-    fetchBatches(selectedProduct);
+
+    // Recargar página para actualizar la lista
+    window.location.reload();
   };
 
   return (

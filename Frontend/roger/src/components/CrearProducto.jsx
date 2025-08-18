@@ -17,18 +17,23 @@ const CrearProducto = () => {
       body: JSON.stringify({
         name,
         description,
-        price: Number(price), // convierto a número al enviar
+        price: Number(price),
         code,
         totalStock: Number(stock),
       }),
     });
     const data = await res.json();
     alert("Producto creado: " + data.name);
+
+    // Limpiar campos
     setName("");
     setDescription("");
     setPrice("");
     setCode("");
     setStock("");
+
+    // Recargar la página para actualizar la lista
+    window.location.reload();
   };
 
   // Permite solo números
